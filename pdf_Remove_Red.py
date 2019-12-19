@@ -1,13 +1,12 @@
 import sys, fitz, os, datetime
 import time
-from Logger import log
-from Logger import logerror
+from logger_to_write.Logger import log
+from logger_to_write.Logger import logerror
 import cv2
 from PIL import Image
 import numpy as np
 
 '''
-
 fitz库是pymupdf中的一个模块
 
 pip install pymupdf
@@ -52,37 +51,38 @@ def pyMuBinaryzation(binaryzationpath):
             pic_name.append(x)
     for i in pic_name:
         image = Image.open(binaryzationpath + '/' + i)
-        # print(image.mode)
         new_file_name = binaryzationpath + '/' + i
         picArray = np.array(image)  # 解析图片成 numpy矩阵
+        red_index_or = ((picArray[..., 0] - picArray[..., 1]) > 10) & ((picArray[..., 0] - picArray[..., 2]) > 10)
+        picArrayTemp = picArray[red_index_or]
         '''
         先加深100以下的所有
         '''
-        black_150_index = (picArray[..., 0] < 110) & (picArray[..., 1] < 100) & (picArray[..., 2] < 100)
-        picArray[black_150_index] = [0, 0, 0]
+        black_100_index = (picArrayTemp[...,0] < 110) & (picArrayTemp[...,1] < 100) & (picArrayTemp[...,2] < 100)
+        picArrayTemp[black_100_index] = [0, 0, 0]
         '''
-        以下是加深150以下的 并且R和GB差值小于80
+        以下是加深150以下的 并且R和GB差值小于60
         '''
-        black_150_index = (picArray[..., 0] < 160) & (picArray[..., 1] < 150) & (picArray[..., 2] < 150) & (
-                    (picArray[..., 0] - picArray[..., 1]) < 80) & ((picArray[..., 0] - picArray[..., 2]) < 80)
-        picArray[black_150_index] = [0, 0, 0]
-
+        black_150_index = (picArrayTemp[...,0] < 160) & (picArrayTemp[...,1] < 150) & (picArrayTemp[...,2] < 150) & (
+                    (picArrayTemp[...,0] - picArrayTemp[...,1]) < 80) & ((picArrayTemp[...,0] - picArrayTemp[...,2]) < 80)
+        picArrayTemp[black_150_index] = [0, 0, 0]
         '''
         以下是加深190以下并且差值不大于20的
         '''
-        black_190_index = (picArray[..., 0] < 190) & (picArray[..., 1] < 190) & (picArray[..., 2] < 200) & (
-                (picArray[..., 0] - picArray[..., 1]) < 20) & ((picArray[..., 0] - picArray[..., 2]) < 20) # & (picArray[..., 0] != picArray[..., 1])
-        picArray[black_190_index] = [0, 0, 0]
+        black_190_index = (picArrayTemp[...,0] < 190) & (picArrayTemp[...,1] < 190) & (picArrayTemp[...,2] < 190) & ((picArrayTemp[...,0] - picArrayTemp[...,1])**2 < 400) & ((picArrayTemp[...,0] - picArrayTemp[...,2])**2 < 400) & ((picArrayTemp[...,1] - picArrayTemp[...,2])**2 < 400) # & (picArray[..., 0] != picArray[..., 1])
+        picArrayTemp[black_190_index] = [0, 0, 0]
         '''
         以下是红色情况的去除
         '''
-        red_index = ((picArray[..., 0] - picArray[..., 1]) > 10) & ((picArray[..., 0] - picArray[..., 2]) > 10)
-        picArray[red_index] = [255, 255, 255]
+        red_index = ((picArrayTemp[...,0] - picArrayTemp[...,1]) > 10) & ((picArrayTemp[...,0] - picArrayTemp[...,2]) > 10)
+        picArrayTemp[red_index] = [255, 255, 255]
         '''
         以下是去除200以上的
         '''
-        white_200_index = (picArray[..., 0] > 200) & (picArray[..., 1] > 200) & (picArray[..., 2] > 200)
-        picArray[white_200_index] = [255, 255, 255]
+        white_200_index = (picArrayTemp[...,0] > 200) & (picArrayTemp[...,1] > 200) & (picArrayTemp[...,2] > 200)
+        picArrayTemp[white_200_index] = [255, 255, 255]
+        # 赋值picArray
+        picArray[red_index_or] = picArrayTemp
 
         im = Image.fromarray(picArray)
         im.save(new_file_name)
@@ -147,7 +147,7 @@ def deleteDir(path):
     except Exception as e:
         logerror.logger.error("User Delete Folder Failed! Exception:%s" % e)
 
-def mainProcess(fileName,outfilepath='',zoomNum=2,compressNum=1):
+def mainProcess(fileName,outfilepath='',zoomNum=2.5,compressNum=1):
     '''
     主函数入口
     :param fileName:需要去章的文件路径,请用绝对路径
@@ -177,7 +177,7 @@ def mainProcess(fileName,outfilepath='',zoomNum=2,compressNum=1):
 
 
 if __name__ == '__main__':
-    fileName = r'D:\Desktop\lyp\文件\100-150PDF\126.pdf'
+    fileName = r'D:/Desktop/lyp/文件/100-150PDF/130.pdf'
     mainProcess(fileName, zoomNum=2.5)  # 入口函数 有四个参数
     # binaryzationpath = r"D:\Desktop\lyp\文件\100-150PDF\test"
     # pyMuBinaryzation(binaryzationpath)
