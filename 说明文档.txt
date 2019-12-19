@@ -1,0 +1,22 @@
+api --> 接口文件
+    请求端口号 5555 ，请求类型 POST
+    请求参数：path -- 需要转化的文件(必填) 必须为.pdf文件 绝对路径
+              outpath -- 需要输出的文件路径（非必填） 必须为.pdf文件 绝对路径
+              zoomNum -- 转换成图片的比例（非必填），影响运行速度，数值越大，去章效果越好，执行时间越长，默认为2
+              compressNum -- 压缩图片比例，数值越大压缩成的图片越小，清晰度越低，默认为1，不进行压缩
+Logger --> 日志文件 需要启动前设置日志默认地址 log_out_path 和error_log_out_path
+       日志建议加入用户id或者 ip，用于区分哪个用户的请求，目前接口请求参数没有用户信息
+pdf_Remove_Red --> 主要文件（去章）
+run --> 启动文件
+testPostRemoveColor --> 测试文件，测试接口,post请求
+tornado --> 改善并发表现
+
+需要的第三方库：
+Flask
+pymupdf --> fitz
+cv2
+PIL
+numpy
+requests
+tornado
+
