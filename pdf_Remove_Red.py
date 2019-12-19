@@ -7,6 +7,7 @@ from PIL import Image
 import numpy as np
 
 '''
+
 fitz库是pymupdf中的一个模块
 
 pip install pymupdf
