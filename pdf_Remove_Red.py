@@ -1,7 +1,7 @@
 import sys, fitz, os, datetime
 import time
-from logger_to_write.Logger import log
-from logger_to_write.Logger import logerror
+from Logger import log
+from Logger import logerror
 import cv2
 from PIL import Image
 import numpy as np
@@ -76,13 +76,15 @@ def pyMuBinaryzation(binaryzationpath):
         '''
         red_index = ((picArrayTemp[...,0] - picArrayTemp[...,1]) > 10) & ((picArrayTemp[...,0] - picArrayTemp[...,2]) > 10)
         picArrayTemp[red_index] = [255, 255, 255]
+
+        # 赋值picArray
+        picArray[red_index_or] = picArrayTemp
+
         '''
         以下是去除200以上的
         '''
-        white_200_index = (picArrayTemp[...,0] > 200) & (picArrayTemp[...,1] > 200) & (picArrayTemp[...,2] > 200)
-        picArrayTemp[white_200_index] = [255, 255, 255]
-        # 赋值picArray
-        picArray[red_index_or] = picArrayTemp
+        white_200_index = (picArray[..., 0] > 200) & (picArray[..., 1] > 200) & (picArray[..., 2] > 200)
+        picArray[white_200_index] = [255, 255, 255]
 
         im = Image.fromarray(picArray)
         im.save(new_file_name)
