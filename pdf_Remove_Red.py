@@ -1,7 +1,7 @@
 import sys, fitz, os, datetime
 import time
-from Logger import log
-from Logger import logerror
+from logger_to_write.Logger import log
+from logger_to_write.Logger import logerror
 import cv2
 from PIL import Image
 import numpy as np
@@ -59,18 +59,18 @@ def pyMuBinaryzation(binaryzationpath):
         先加深100以下的所有
         '''
         black_100_index = (picArrayTemp[...,0] < 110) & (picArrayTemp[...,1] < 100) & (picArrayTemp[...,2] < 100)
-        picArrayTemp[black_100_index] = [0, 0, 0]
+        picArrayTemp[black_100_index] = [49, 49, 49]
         '''
         以下是加深150以下的 并且R和GB差值小于60
         '''
         black_150_index = (picArrayTemp[...,0] < 160) & (picArrayTemp[...,1] < 150) & (picArrayTemp[...,2] < 150) & (
-                    (picArrayTemp[...,0] - picArrayTemp[...,1]) < 80) & ((picArrayTemp[...,0] - picArrayTemp[...,2]) < 80)
-        picArrayTemp[black_150_index] = [0, 0, 0]
+                    (picArrayTemp[...,0] - picArrayTemp[...,1])**2 < 1600) & ((picArrayTemp[...,0] - picArrayTemp[...,2])**2 < 1600)
+        picArrayTemp[black_150_index] = [49, 49, 49]
         '''
         以下是加深190以下并且差值不大于20的
         '''
-        black_190_index = (picArrayTemp[...,0] < 190) & (picArrayTemp[...,1] < 190) & (picArrayTemp[...,2] < 190) & ((picArrayTemp[...,0] - picArrayTemp[...,1])**2 < 400) & ((picArrayTemp[...,0] - picArrayTemp[...,2])**2 < 400) & ((picArrayTemp[...,1] - picArrayTemp[...,2])**2 < 400) # & (picArray[..., 0] != picArray[..., 1])
-        picArrayTemp[black_190_index] = [0, 0, 0]
+        black_190_index = (picArrayTemp[...,0] < 190) & (picArrayTemp[...,1] < 190) & (picArrayTemp[...,2] < 190) & ((picArrayTemp[...,0] - picArrayTemp[...,1])**2 < 225) & ((picArrayTemp[...,0] - picArrayTemp[...,2])**2 < 225) & ((picArrayTemp[...,1] - picArrayTemp[...,2])**2 < 225) # & (picArray[..., 0] != picArray[..., 1])
+        picArrayTemp[black_190_index] = [49, 49, 49]
         '''
         以下是红色情况的去除
         '''
@@ -79,9 +79,8 @@ def pyMuBinaryzation(binaryzationpath):
 
         # 赋值picArray
         picArray[red_index_or] = picArrayTemp
-
         '''
-        以下是去除200以上的
+            以下是去除200以上的
         '''
         white_200_index = (picArray[..., 0] > 200) & (picArray[..., 1] > 200) & (picArray[..., 2] > 200)
         picArray[white_200_index] = [255, 255, 255]
@@ -126,7 +125,7 @@ def compress(outdir, compressNum):
             pic_name.append(x)
     for i in pic_name:
         new_file_name = outdir + '/' + i
-        img = cv2.imread(outdir + '/' + i)
+        img = cv2.imread(new_file_name)
         y, x, z = img.shape
         res = cv2.resize(img, dsize=(int(x / compressNum), int(y / compressNum)), interpolation=cv2.INTER_CUBIC)
         cv2.imwrite(new_file_name, res)
@@ -179,7 +178,7 @@ def mainProcess(fileName,outfilepath='',zoomNum=2.5,compressNum=1):
 
 
 if __name__ == '__main__':
-    fileName = r'D:/Desktop/lyp/文件/100-150PDF/130.pdf'
-    mainProcess(fileName, zoomNum=2.5)  # 入口函数 有四个参数
+    fileName = r'D:\Desktop\lyp\文件\100-150PDF/150.pdf'
+    mainProcess(fileName, zoomNum=2.5, compressNum=1)  # 入口函数 有四个参数
     # binaryzationpath = r"D:\Desktop\lyp\文件\100-150PDF\test"
     # pyMuBinaryzation(binaryzationpath)
